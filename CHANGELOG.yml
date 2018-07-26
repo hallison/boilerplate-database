@@ -1,0 +1,6 @@
+- :version: 0.1.0
+  :release: 2017-07-24
+  :summary:
+    Initial version.
+  :changes:
+  - Migration schema.
