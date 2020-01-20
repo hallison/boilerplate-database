@@ -1,2 +1,2 @@
-Buildfile
-db/connection.ini
+providers/provider.mk
+providers/*/provider.rc
