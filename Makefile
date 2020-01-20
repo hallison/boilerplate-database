@@ -1,34 +1,41 @@
 SHELL = /bin/bash
 
-.SUFFIXES:
+-include providers/provider.mk
 
-## Informations
-name         = project
-version     ?= 0.1.0
-release     ?= $$(date +%F)
-environment ?= development
-debug       ?= true
-
-## Macros
-parse ?= m4
-parse += -D_ENVIRONMENT='${environment}'
-parse += -D_DEBUG='${debug}'
-
-.SUFFIXES: .m4 .sh .ini .sql
 .DEFAULT: help
 
-## Includes
-include db/schema.mk
+default:: help
 
-.m4.sql .m4.rb:
-	@$(parse) $(<) > $(@)
+#? Configure or alternate the provider connection
+#? $ make provider
+provider: provider.config
 
-%.ini %.sh: %.m4
-	@$(parse) $(<) > $(@)
+#? Configure provider connection
+#? $ make provider.config
+provider.config:
+	$(SHELL) providers/provider.sh $(@:provider.%=%)
 
-#? Clean sources
-#? $ make clean
-clean: db.clean
+#? Database console
+#? $ make provider.console
+provider.console:
+	$(SHELL) providers/provider.sh $(@:provider.%=%) ${provider.name}
 
-help: db.help
+#? Database schema patch migration
+#? $ make schema [version=VERSION]
+schema: schema.apply
+
+#? $ make schema.<apply|revert> [version=VERSION] [patch=PATCH]
+schema.apply schema.revert: ${provider.config}
+	$(SHELL) schema/schema.sh ${provider.name} $(@:schema.%=%) ${version} ${patch}
+
+#? $ make schema.bootstrap [version=VERSION]
+schema.bootstrap: schema.apply
+	$(SHELL) schema/schema.sh ${provider.name} $(@:schema.%=%) ${version}
+
+#? Clean database resources
+#? $ make schema.clean
+clean:
+	rm -rf providers/*/provider.rc
+
+help:
 	@grep '^#?' Makefile | cut -c4-
