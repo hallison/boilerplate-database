@@ -62,7 +62,7 @@ function command-console {
 
   local provider=${PROVIDERS_PATH}/${1}/provider
 
-  test -f ${provider}.rc || config ${1}
+  test -f ${provider}.rc || command-config ${1}
 
   source ${provider}.sh
 
