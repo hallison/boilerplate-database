@@ -28,8 +28,9 @@ function command-config {
 
   local provider="${1}"
   local path=""
+  local config="${PROVIDERS_PATH}/provider"
 
-  test -z "${1}" && {
+  test -z "${provider}" && {
     echo "Select provider:"
     select provider in $(find ${PROVIDERS_PATH} -mindepth 1 -type d | cut -d/ -f2); do
       break
@@ -51,7 +52,7 @@ function command-config {
     ${parser} -D_HOST="${host}" -D_PORT="${port}" -D_SCHEMA="${schema}" -D_USER="${user}" -D_PASSWORD="${password}" ${path}.m4 > ${path}.rc
   }
 
-  ${parser} -D_PROVIDER="${provider}" -D_RESOURCE="${path}.rc" ${PROVIDERS_PATH}/provider.m4 > ${PROVIDERS_PATH}/provider.mk
+  ${parser} -D_PROVIDER="${provider}" -D_RESOURCE="${path}.rc" ${config}.m4 > ${config}.mk
 
   return ${?}
 }
