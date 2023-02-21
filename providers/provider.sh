@@ -4,9 +4,13 @@
 #?    bash provider.sh <COMMAND>
 #?
 #? Commands:
-#?    help      Show this message.
-#?    config    Configure provider connection.
-#?    console   Execute CLI to use console.
+#?    help
+#?        Show this message.
+#?    config [PROVIDER]
+#?    config <PROVIDER> [ENVFILE]
+#?        Configure provider connection.
+#?    console [PROVIDER]
+#?        Execute CLI to use console.
 #?
 
 set -e
@@ -27,32 +31,34 @@ function command-config {
 : # ${1:?Provider name to configure connection}
 
   local provider="${1}"
-  local path=""
+  local pathname=""
   local config="${PROVIDERS_PATH}/provider"
 
   test -z "${provider}" && {
     echo "Select provider:"
-    select provider in $(find ${PROVIDERS_PATH} -mindepth 1 -type d | cut -d/ -f2); do
+    select provider in $(find ${PROVIDERS_PATH} -mindepth 1 -type d | cut -d/ -f2 | sort); do
       break
     done
   }
 
-  path=${PROVIDERS_PATH}/${provider}/provider
+  pathname=${PROVIDERS_PATH}/${provider}/provider
 
-  test -f ${path}.rc || {
-    source ${path}.sh
+  test -f ${pathname}.rc || {
+    source ${pathname}.sh
 
-    read -erp "Host: "   -i ${host}   host
-    read -erp "Port: "   -i ${port}   port
-    read -erp "Schema: " -i ${schema} schema
-    read -erp "User: "   -i ${user}   user
-    read -esp "Password: " password
+    printf "\nConfigure provider %s\n" ${provider}
+
+    read -erp "Host     : " -i ${host}   host
+    read -erp "Port     : " -i ${port}   port
+    read -erp "Schema   : " -i ${schema} schema
+    read -erp "User     : " -i ${user}   user
+    read -esp "Password : " password
     echo
 
-    ${parser} -D_HOST="${host}" -D_PORT="${port}" -D_SCHEMA="${schema}" -D_USER="${user}" -D_PASSWORD="${password}" ${path}.m4 > ${path}.rc
+    ${parser} -D_HOST="${host}" -D_PORT="${port}" -D_SCHEMA="${schema}" -D_USER="${user}" -D_PASSWORD="${password}" ${pathname}.m4 > ${pathname}.rc
   }
 
-  ${parser} -D_PROVIDER="${provider}" -D_RESOURCE="${path}.rc" ${config}.m4 > ${config}.mk
+  ${parser} -D_PROVIDER="${provider}" -D_RESOURCE="${pathname}.rc" ${config}.m4 > ${config}.mk
 
   return ${?}
 }
