@@ -1,7 +1,7 @@
 ## Datasource Toolkit
 ## -------------------------------------------------------------------------------- 
 ## A set of scripts that configure the connection to the database, apply and/or
-## revert data migration migration through versions and patches using SQL files
+## revert data migration through versions and patches using SQL files
 ## with markups that will indicate should be what applied or removed
 ## -------------------------------------------------------------------------------- 
 
