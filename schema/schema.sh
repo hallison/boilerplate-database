@@ -2,6 +2,7 @@
 #?
 #? Usage:
 #?    bash schema.sh <PROVIDER> <COMMAND> <VERSION> [PATCH]
+#?    bash schema.sh help
 #?
 #? Commands:
 #?    help      Show this message.
@@ -12,6 +13,8 @@
 set -e
 
 unset CDPATH
+
+parser=$(command -v m4)
 
 function schema-migration_table {
   provider-runfile ${PROVIDER_CONFIG} ${PROVIDER_PATH}/schema_version_table.sql
@@ -73,6 +76,28 @@ function schema-delete_version {
 
 function command-usage {
   grep '^#?' $0 | cut -c4-
+
+  return ${?}
+}
+
+function command-config {
+: # ${1:?Version}
+: # ${2:?Patch}
+
+  local version="${1}"
+  local patch="1"
+  local config=${SCHEMA_PATH}/schema
+
+  test -z "${version}" && {
+    echo "Select version:"
+    select version in $(find ${SCHEMA_PATH} -mindepth 1 -type d | cut -d/ -f2 | sort -V); do
+      break
+    done
+  }
+
+  ${parser} -D_VERSION="${version#v}" -D_PATCH=${2:-1} ${config}.m4 > ${config}.mk
+
+  return  ${?}
 }
 
 function command-apply {
@@ -101,7 +126,9 @@ function command-apply {
     }
   done
 
-  return 0
+  command-config ${VERSION} ${patch}
+
+  return ${?}
 }
 
 function command-revert {
@@ -130,6 +157,8 @@ function command-revert {
     }
   done
 
+  schema-config ${VERSION} ${patch}
+
   return 0
 }
 
@@ -145,11 +174,11 @@ test ${1:-help} == 'help' && {
 
 : ${1:?Provider is required. Type 'help'.}
 : ${2:?Command is required. Type 'help'.}
-: ${3:?Schema version}
+# ${3:?Schema version}
 
 PROVIDER=${1}
 COMMAND=command-${2}
-VERSION=${3}
+VERSION=${3:-0.1.0}
 
 export SCHEMA_PATH=$(dirname $0)
 export SCHEMA_VERSION_PATH=${SCHEMA_PATH}/v${VERSION}
