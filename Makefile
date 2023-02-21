@@ -1,41 +1,57 @@
+## Datasource Toolkit
+## -------------------------------------------------------------------------------- 
+## A set of scripts that configure the connection to the database, apply and/or
+## revert data migration migration through versions and patches using SQL files
+## with markups that will indicate should be what applied or removed
+## -------------------------------------------------------------------------------- 
+
 SHELL = /bin/bash
 
 -include providers/provider.mk
+-include schema/schema.mk
 
 .DEFAULT: help
 
+version ?= ${schema.version}
+patch   ?= ${schema.patch}
+
 default:: help
+#?
 
-#? Configure or alternate the provider connection
-#? $ make provider
 provider: provider.config
+#? Configure or alternate the provider connection
 
-#? Configure provider connection
-#? $ make provider.config
 provider.config:
-	$(SHELL) providers/provider.sh $(@:provider.%=%)
-
-#? Database console
-#? $ make provider.console
-provider.console:
+#? Configure provider connection
 	$(SHELL) providers/provider.sh $(@:provider.%=%) ${provider.name}
 
-#? Database schema patch migration
-#? $ make schema [version=VERSION]
-schema: schema.apply
+provider.console:
+#? Open onsole
+	$(SHELL) providers/provider.sh $(@:provider.%=%) ${provider.name}
 
-#? $ make schema.<apply|revert> [version=VERSION] [patch=PATCH]
+schema: provider schema.config
+#? Configure or alternate the database schema patch migration
+
+schema.config:
+#? Configure provider connection
+	$(SHELL) schema/schema.sh ${provider.name} $(@:schema.%=%)
+
 schema.apply schema.revert: ${provider.config}
+#? Apply or revert a schema version and/or patch
+#? Arguments: [version=<VERSION>] [patch=<PATCH>]
 	$(SHELL) schema/schema.sh ${provider.name} $(@:schema.%=%) ${version} ${patch}
 
-#? $ make schema.bootstrap [version=VERSION]
 schema.bootstrap: schema.apply
+#? Bootstrap schema
+#? Arguments: [version=<VERSION>]
 	$(SHELL) schema/schema.sh ${provider.name} $(@:schema.%=%) ${version}
 
-#? Clean database resources
-#? $ make schema.clean
 clean:
+#? Clean database resources
 	rm -rf providers/*/provider.rc
+	rm -rf providers/provider.mk
 
 help:
-	@grep '^#?' Makefile | cut -c4-
+#? Show this message
+	@sed -n -Ee 's/^(\w.*):(.*)?/\n\1:/p' -Ee 's/^#\? (.*)/\t\1/p' -Ee 's/\n//' -Ee 's/^## ?//p' Makefile
+	@echo
