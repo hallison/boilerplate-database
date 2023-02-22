@@ -1,0 +1,47 @@
+#!/bin/bash
+
+## dstk - Datasource Toolkit
+##
+## SUMMARY
+##
+##   A set of scripts that configure the connection to the database, apply
+##   data migration through versions and patches using SQL files
+##
+## USAGE
+##
+##   dstk <COMMAND> [OPTIONS]
+##
+## COMMANDS
+
+unset CDPATH
+
+#: PREFIX=${PREFIX:-_PREFIX}
+
+BINDIR=${BINDIR:-${PREFIX:-.}/bin}
+LIBDIR=${LIBDIR:-${PREFIX:-.}/lib/dstk}
+DSTKDIR=datasources
+
+function dstk {
+  # ${1:?Command name}
+
+  local command_name="dstk-${1:-help}"
+  local command_source="${LIBDIR}/commands/${1:-help}.sh"
+
+  shift 1
+
+  source "${LIBDIR}/base.sh"
+
+  test -f "${command_source}" && source "${command_source}"
+
+  command -v "${command_name}" > /dev/null && {
+    "${command_name}" $@
+    return ${?}
+  } || {
+    dstk_check_usage "${command_name}"
+    return 1
+  }
+}
+
+dstk ${@}
+
+# vim: filetype=sh
