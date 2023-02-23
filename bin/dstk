@@ -15,23 +15,37 @@
 
 unset CDPATH
 
+#- Runtime environment
 #: PREFIX=${PREFIX:-_PREFIX}
+export DSTK_BINDIR=${DSTK_BINDIR:-${PREFIX:-.}/bin}
+export DSTK_LIBDIR=${DSTK_LIBDIR:-${PREFIX:-.}/lib/dstk}
+export DSTK_COMMANDS_LIBDIR=${DSTK_LIBDIR}/commands
+export DSTK_REPOSITORIES_LIBDIR=${DSTK_LIBDIR}/repositories
+export DSTK_ENVIRONMENT=${DSTK_LIBDIR}/environment.sh
 
-BINDIR=${BINDIR:-${PREFIX:-.}/bin}
-LIBDIR=${LIBDIR:-${PREFIX:-.}/lib/dstk}
-DSTKDIR=datasources
+#- User configuration
+
+test -f .dstkrc && source .dstkrc
+
+#- Environment
+source "${DSTK_LIBDIR}/environment.sh"
+source "${DSTK_LIBDIR}/base.sh"
+
+test -f "${DSTK_DATASOURCE_ENABLED}" && {
+  read DSTK_DATASOURCE DSTK_REPOSITORY <"${DSTK_DATASOURCE_ENABLED}"
+}
 
 function dstk {
   # ${1:?Command name}
 
   local command_name="dstk-${1:-help}"
-  local command_source="${LIBDIR}/commands/${1:-help}.sh"
+  local command_source="${DSTK_COMMANDS_LIBDIR}/${1:-help}.sh"
 
   shift 1
 
-  source "${LIBDIR}/base.sh"
-
   test -f "${command_source}" && source "${command_source}"
+
+  set -e
 
   command -v "${command_name}" > /dev/null && {
     "${command_name}" $@
