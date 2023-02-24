@@ -1,2 +1,5 @@
 providers/provider.mk
 providers/*/provider.rc
+.dstkrc
+.vimsession
+**.bkp
