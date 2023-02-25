@@ -1,57 +1,140 @@
 ## Datasource Toolkit
-## -------------------------------------------------------------------------------- 
-## A set of scripts that configure the connection to the database, apply and/or
-## revert data migration through versions and patches using SQL files
-## with markups that will indicate should be what applied or removed
-## -------------------------------------------------------------------------------- 
+##
+## _PROGRAM _VERSION (_RELEASE)
+##
+## prefix       : _PREFIX
+## bindir       : _BINDIR
+## sysconfdir   : _SYSCONFDIR
+## libdir       : _LIBDIR
+## datarootdir  : _DATAROOTDIR
+## sharerootdir : _SHAREROOTDIR
+## docdir       : _DOCDIR
+## sourcedir    : _SOURCEDIR
 
-SHELL = /bin/bash
 
--include providers/provider.mk
--include schema/schema.mk
+.POSIX:
+SHELL = /bin/sh
 
-.DEFAULT: help
+prefix       ?= /usr/local
+bindir       ?= ${prefix}/bin
+sysconfdir   ?= ${prefix}/etc
+libdir       ?= ${prefix}/lib
+datarootdir  ?= ${prefix}/share
+sharerootdir ?= ${datarootdir}
+docdir       ?= ${sharerootdir}/doc
+sourcedir    ?= ${prefix}/src
 
-version ?= ${schema.version}
-patch   ?= ${schema.patch}
+testdir = test
 
-default:: help
-#?
+pkg.name     = datasource-toolkit
+pkg.version ?= $(shell git tag --list --sort=-refname | head -1 | tr -d [\n])
+plg.release ?= $(shell git log ${version} --format='%cs' -1 | tr -d [\n])
 
-provider: provider.config
-#? Configure or alternate the provider connection
+source.name        = dstk
+source.executables = bin/${source.name}
+source.libraries   = $(shell ls lib/${source.name}/*.sh lib/${source.name}/commands/*.sh)
+source.documents   = README.html README.pt-BR.html
 
-provider.config:
-#? Configure provider connection
-	$(SHELL) providers/provider.sh $(@:provider.%=%) ${provider.name}
+target.executables 	= $(addprefix ${prefix}/,${source.executables})
+target.libraries    = $(addprefix ${prefix}/,${source.libraries})
+target.documents    = $(addprefix ${target.docdir}/,${source.documents})
 
-provider.console:
-#? Open onsole
-	$(SHELL) providers/provider.sh $(@:provider.%=%) ${provider.name}
+target.bindir       ?= ${bindir}
+target.sysconfdir   ?= ${sysconfdir}/${source.name}
+target.libdir       ?= ${libdir}/${source.name}
+target.datarootdir  ?= ${datarootdir}/${source.name}
+target.sharerootdir ?= ${sharerootdir}/${source.name}
+target.docdir       ?= ${docdir}/${source.name}
+target.sourcedir    ?= ${sourcedir}/${source.name}
 
-schema: provider schema.config
-#? Configure or alternate the database schema patch migration
+target.directories += ${prefix}
+target.directories += ${target.bindir}
+target.directories += ${target.libdir}
+target.directories += ${target.sysconfdir}
+target.directories += ${target.datarootdir}
+target.directories += ${target.docdir}
+target.directories += ${target.sourcedir}
 
-schema.config:
-#? Configure provider connection
-	$(SHELL) schema/schema.sh ${provider.name} $(@:schema.%=%)
+test   ?= all
+errors  = test.err
 
-schema.apply schema.revert: ${provider.config}
-#? Apply or revert a schema version and/or patch
-#? Arguments: [version=<VERSION>] [patch=<PATCH>]
-	$(SHELL) schema/schema.sh ${provider.name} $(@:schema.%=%) ${version} ${patch}
+munge += m4
+munge += -D_NAME="${pkg.name}"
+munge += -D_VERSION="${pkg.version}"
+munge += -D_RELEASE="${pkg.release}"
+munge += -D_EXECUTABLE="${source.name}"
+munge += -D_PREFIX="${prefix}"
+munge += -D_BINDIR="${target.bindir}"
+munge += -D_LIBDIR="${target.libdir}"
+munge += -D_SYSCONFDIR="${target.sysconfdir}"
+munge += -D_DATAROOTDIR="${target.datarootdir}"
+munge += -D_SHAREROOTDIR="${target.sharerootdir}"
+munge += -D_DOCDIR="${target.docdir}"
+munge += -D_SOURCEDIR="${target.sourcedir}"
 
-schema.bootstrap: schema.apply
-#? Bootstrap schema
-#? Arguments: [version=<VERSION>]
-	$(SHELL) schema/schema.sh ${provider.name} $(@:schema.%=%) ${version}
+.SUFFIXES: .m4 .sh .err .md .html
 
-clean:
-#? Clean database resources
-	rm -rf providers/*/provider.rc
-	rm -rf providers/provider.mk
+.m4:
+	${munge} ${<} > ${@}
+	chmod a+x ${@}
+
+.sh.err: 
+	time -p sh -x ${<} ${test} 2> ${@}
+
+.md.html:
+	markdown ${<} > ${@}
 
 help:
 #? Show this message
-	@sed -n -Ee 's/^(\w.*):(.*)?/\n\1:/p' -Ee 's/^#\? (.*)/\t\1/p' -Ee 's/\n//' -Ee 's/^## ?//p' Makefile
+	@sed -n -Ee 's/^(\w[^-].*):(.*)?/\n\1:/p' -Ee 's/^#\? (.*)/    \1/p' -Ee 's/\n//' -Ee 's/^## ?//p' Makefile | $(munge)
 	@echo
+
+check: $(errors)
+#? Run tests
+
+doc: README.html README.pt-BR.html
+#? Build documentation
+
+build:
+#? Build main program
+
+install: build --install-dirs --install-bins --install-libs --install-configs --install-docs
+#? Build and install program and all resources
+
+--install-dirs: ${directories}
+
+--install-bins: ${executables}
+
+--install-libs: ${libraries}
+
+--install-configs: ${configs}
+
+--install-docs: doc ${documents}
+
+uninstall: --uninstall-bins --uninstall-configs --uninstall-libs --uninstall-docs
+#? Uninstall program and all resources
+
+--uninstall-bins:
+	rm -f ${executables}
+
+--uninstall-libs:
+	rm -f ${libraries}
+
+--uninstall-configs:
+	rm -f ${configs}
+
+--uninstall-docs:
+	rm -f ${documents}
+
+${executables} ${libraries} ${configs} ${documents}:
+	@echo cp ${@F} ${@}
+
+${directories}:
+	@echo mkdir -p ${@}
+
+clean:
+#? Remove temporary files.
+	rm -rf *.err
+	rm -rf *.html
+	rm -rf ${testdir}
+#	rm -rf ${source.name}

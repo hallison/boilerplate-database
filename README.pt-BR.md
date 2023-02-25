@@ -18,6 +18,12 @@ basta executar o comando:
 $ make install
 ```
 
+Para instalação em outro diretório:
+
+```sh
+$ make install prefix=/
+```
+
 ## Bancos de dados suportados
 
 - PostegreSQL

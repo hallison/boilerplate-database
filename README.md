@@ -17,6 +17,12 @@ Considering the directory of local installation to local applications
 $ make install
 ```
 
+For installation in another directory:
+
+```sh
+$ make install prefix=/
+```
+
 ## Database Supported
 
 - PostegreSQL
