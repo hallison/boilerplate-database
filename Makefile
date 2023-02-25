@@ -58,7 +58,7 @@ target.directories += ${target.sourcedir}
 test   ?= all
 errors  = test.err
 
-munge += m4
+munge += $(shell command -v m4)
 munge += -D_NAME="${pkg.name}"
 munge += -D_VERSION="${pkg.version}"
 munge += -D_RELEASE="${pkg.release}"
@@ -72,30 +72,33 @@ munge += -D_SHAREROOTDIR="${target.sharerootdir}"
 munge += -D_DOCDIR="${target.docdir}"
 munge += -D_SOURCEDIR="${target.sourcedir}"
 
+markdown += $(shell command -v markdown)
+markdown += -f fencedcode
+
 .SUFFIXES: .m4 .sh .err .md .html
 
 .m4:
-	${munge} ${<} > ${@}
+	$(munge) ${<} > ${@}
 	chmod a+x ${@}
 
 .sh.err: 
 	time -p sh -x ${<} ${test} 2> ${@}
 
 .md.html:
-	markdown ${<} > ${@}
+	$(markdown) ${<} > ${@}
 
 help:
 #? Show this message
 	@sed -n -Ee 's/^(\w[^-].*):(.*)?/\n\1:/p' -Ee 's/^#\? (.*)/    \1/p' -Ee 's/\n//' -Ee 's/^## ?//p' Makefile | $(munge)
 	@echo
 
-check: $(errors)
+check: ${errors}
 #? Run tests
 
 doc: README.html README.pt-BR.html
-#? Build documentation
+#? Build documentation (markdown is required)
 
-build:
+build: ${source.name}
 #? Build main program
 
 install: build --install-dirs --install-bins --install-libs --install-configs --install-docs

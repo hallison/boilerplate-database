@@ -21,10 +21,10 @@ $ make install
 Para instalação em outro diretório:
 
 ```sh
-$ make install prefix=/
+$ make install prefix=/meu/diretorio
 ```
 
 ## Bancos de dados suportados
 
-- PostegreSQL
+- PostgreSQL
 - MySQL/MariaDB
