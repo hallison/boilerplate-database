@@ -31,11 +31,14 @@ $ make install prefix=/meu/diretorio
 
 ## Fluxo de trabalho comum
 
-**Inicialização**
-: Configurações básicas para ajustes dos _datasources_.
++ **Inicialização**
 
-**Configuração**
-: Configuração de um ou mais _datasources_ e respectivos repositórios.
+  Configurações básicas para ajustes dos _datasources_.
 
-**Migração**
-: Após configuração, controle de migração de dados.
++ **Configuração**
+
+  Configuração de um ou mais _datasources_ e respectivos repositórios.
+
++ **Migração**
+
+  Após configuração, controle de migração de dados.

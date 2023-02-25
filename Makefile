@@ -73,7 +73,7 @@ munge += -D_DOCDIR="${target.docdir}"
 munge += -D_SOURCEDIR="${target.sourcedir}"
 
 markdown += $(shell command -v markdown)
-markdown += -f fencedcode,dlextra
+markdown += -f fencedcode,githubtags
 
 .SUFFIXES: .m4 .sh .err .md .html
 

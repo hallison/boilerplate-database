@@ -30,11 +30,14 @@ $ make install prefix=/my/directory
 
 ## Common Workflow
 
-**Initialization**
-: Basic setup for datasources settings.
++ **Initialization**
 
-**Configuration**
-: Configuration of one or more datasources and respective repositories.
+  Basic setup for datasources settings.
 
-**Migration**
-: After configuration, data migration control.
++ **Configuration**
+
+  Configuration of one or more datasources and respective repositories.
+
++ **Migration**
+
+  After configuration, data migration control.
