@@ -13,7 +13,7 @@
 
 
 .POSIX:
-SHELL = /bin/sh
+SHELL = /bin/bash
 
 prefix       ?= /usr/local
 bindir       ?= ${prefix}/bin
