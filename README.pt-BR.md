@@ -28,3 +28,14 @@ $ make install prefix=/meu/diretorio
 
 - PostgreSQL
 - MySQL/MariaDB
+
+## Fluxo de trabalho comum
+
+**Inicialização**
+: Configurações básicas para ajustes dos _datasources_.
+
+**Configuração**
+: Configuração de um ou mais _datasources_ e respectivos repositórios.
+
+**Migração**
+: Após configuração, controle de migração de dados.
