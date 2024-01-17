@@ -20,13 +20,13 @@ function dstk_check_usage {
 }
 
 function dstk_check_configuration {
-  test -z "${DSTK_RC}" && return 1
-  test -f "${DSTK_RC}"
+  test -z "${DATASOURCE_RC}" && return 1
+  test -f "${DATASOURCE_RC}"
 }
 
 function dstk_check_datasource_enabled {
-  test -z "${DSTK_DATASOURCE_ENABLED}" && return 1
-  test -f "${DSTK_DATASOURCE_ENABLED}"
+  test -z "${DATASOURCE_ENABLED}" && return 1
+  test -f "${DATASOURCE_ENABLED}"
 }
 
 function dstk_set_datasource {
@@ -34,7 +34,7 @@ function dstk_set_datasource {
 
   dstk_check_datasource_enabled || return 1
   
-  echo "${1} ${DSTK_REPOSITORY}" > "${DSTK_DATASOURCE_ENABLED}"
+  echo "${1} ${DSTK_REPOSITORY}" > "${DATASOURCE_ENABLED}"
 
   return 0
 }
@@ -46,14 +46,14 @@ function dstk_all_repositories {
 }
 
 function dstk_check_datasources_path {
-  test -z "${DSTK_DATASOURCES_PATH}" && return 1
-  test -d "${DSTK_DATASOURCES_PATH}"
+  test -z "${DATASOURCE_PATH}" && return 1
+  test -d "${DATASOURCE_PATH}"
 }
 
 function dstk_check_datasource {
   : ${1:-datasource}
 
-  dstk_check_datasources_path && test -d "${DSTK_DATASOURCES_PATH}/${1}"
+  dstk_check_datasources_path && test -d "${DATASOURCE_PATH}/${1}"
 }
 
 function dstk_run {
@@ -61,12 +61,12 @@ function dstk_run {
 
   #- User configuration
   dstk_check_configuration && {
-    source "${DSTK_RC}"
+    source "${DATASOURCE_RC}"
     source "${DSTK_ENVIRONMENT}"
   }
 
   dstk_check_datasource_enabled && {
-    read DSTK_DATASOURCE DSTK_REPOSITORY <"${DSTK_DATASOURCE_ENABLED}"
+    read DSTK_DATASOURCE DSTK_REPOSITORY <"${DATASOURCE_ENABLED}"
   }
 
   local command_name="dstk-${1:-help}"

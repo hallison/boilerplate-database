@@ -5,23 +5,23 @@ function dstk-init { #: [PATH]
   : ${1:-datasource}
 
   dstk_check_configuration && {
-    echo "Datasource Toolkit has been initialized in directory '${DSTK_PATH}'."
+    echo "Datasource Toolkit has been initialized in directory '${DATASOURCE_ROOT}'."
     return 1
   }
 
   test -n "${1}" && {
-    export DSTK_PATH="${1}"
+    export DATASOURCE_ROOT="${1}"
     source "${DSTK_ENVIRONMENT}"
-    echo "DSTK_PATH=${DSTK_PATH}" > "${DSTK_RC}"
+    echo "DATASOURCE_ROOT=${DATASOURCE_ROOT}" > "${DATASOURCE_RC}"
   }
 
-  printf "Directory ${DSTK_DATASOURCES_PATH} ... "
-  mkdir -p "${DSTK_DATASOURCES_PATH}" && echo done
+  printf "Directory ${DATASOURCE_PATH} ... "
+  mkdir -p "${DATASOURCE_PATH}" && echo done
 
-  printf "Directory ${DSTK_SCHEMA_PATH} ... "
-  mkdir -p "${DSTK_SCHEMA_PATH}" && echo done
+  printf "Directory ${DATASOURCE_SCHEMA_PATH} ... "
+  mkdir -p "${DATASOURCE_SCHEMA_PATH}" && echo done
 
-  echo "Datasource Toolkit has been initialized in directory '${DSTK_PATH}'."
+  echo "Datasource Toolkit has been initialized in directory '${DATASOURCE_ROOT}'."
   echo "To configure a datasource, run command 'config'."
 
   return 0
